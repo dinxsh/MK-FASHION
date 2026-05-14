@@ -1,0 +1,38 @@
+(node:16780) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[31m[Nest] 9316  - [39m05/15/2026, 12:14:44 AM [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mrequest entity too large[39m
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\read.js:79:3)
+    at jsonParser (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\types\json.js:138:5)
+    at Layer.handle [as handle_request] (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:280:10)
+    at cors (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\cors@2.8.5\node_modules\cors\lib\index.js:188:7)
+[31m[Nest] 9316  - [39m05/15/2026, 12:14:47 AM [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mrequest entity too large[39m
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\read.js:79:3)
+    at jsonParser (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\types\json.js:138:5)
+    at Layer.handle [as handle_request] (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:280:10)
+    at cors (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\cors@2.8.5\node_modules\cors\lib\index.js:188:7)
+[31m[Nest] 9316  - [39m05/15/2026, 12:20:39 AM [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mrequest entity too large[39m
+PayloadTooLargeError: request entity too large
+    at readStream (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:163:17)
+    at getRawBody (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\raw-body@2.5.3\node_modules\raw-body\index.js:116:12)
+    at read (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\read.js:79:3)
+    at jsonParser (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\body-parser@1.20.4\node_modules\body-parser\lib\types\json.js:138:5)
+    at Layer.handle [as handle_request] (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\express@4.22.1\node_modules\express\lib\router\index.js:280:10)
+    at cors (C:\Users\hp\Documents\vscodee\MKfashion\MK-FASHION\website\node_modules\.pnpm\cors@2.8.5\node_modules\cors\lib\index.js:188:7)

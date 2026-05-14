@@ -1,32 +1,26 @@
 'use client';
-import { Inter } from 'next/font/google';
 import '../globals.css';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminTopbar from '@/components/admin/AdminTopbar';
+import { AdminSessionProvider, useAdminSession } from '@/components/admin/AdminSessionProvider';
 import { Toaster } from 'react-hot-toast';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { isAuthenticated } from '@/lib/adminAuth';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+import { usePathname } from 'next/navigation';
+export const dynamic = 'force-dynamic';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
+  return (
+    <AdminSessionProvider>
+      <AdminChrome>{children}</AdminChrome>
+    </AdminSessionProvider>
+  );
+}
 
+function AdminChrome({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { isLoading } = useAdminSession();
   const isLoginPage = pathname === '/admin/login';
 
-  useEffect(() => {
-    // Basic Client-side Auth Guard
-    if (!isLoginPage && !isAuthenticated()) {
-      router.push('/admin/login');
-    } else {
-      setIsReady(true);
-    }
-  }, [pathname, router, isLoginPage]);
-
-  if (!isReady && !isLoginPage) {
+  if (isLoading && !isLoginPage) {
     return (
       <div className="min-h-screen bg-[#050108] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -35,8 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans bg-[#050108] text-white flex h-screen overflow-hidden">
+    <div className="font-sans bg-[#050108] text-white flex h-screen overflow-hidden">
         {!isLoginPage && <AdminSidebar />}
         <div className="flex flex-col flex-1 overflow-hidden">
           {!isLoginPage && <AdminTopbar />}
@@ -52,7 +45,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             error: { iconTheme: { primary: '#ef4444', secondary: '#050108' } },
           }}
         />
-      </body>
-    </html>
+    </div>
   );
 }

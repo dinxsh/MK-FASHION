@@ -1,21 +1,23 @@
 'use client';
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'mkfashion2026';
-const STORAGE_KEY = 'mk_admin_auth';
+import { apiFetch } from './api';
 
-export function isAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false;
-  return sessionStorage.getItem(STORAGE_KEY) === 'true';
+export async function login(email: string, password: string) {
+  return apiFetch<{ user: { id: string; email: string; name: string; role: 'Admin' | 'Manager' | 'Viewer' } }>(
+    '/auth/login',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    },
+  );
 }
 
-export function login(password: string): boolean {
-  if (password === ADMIN_PASSWORD) {
-    sessionStorage.setItem(STORAGE_KEY, 'true');
-    return true;
-  }
-  return false;
+export async function logout() {
+  return apiFetch('/auth/logout', { method: 'POST' });
 }
 
-export function logout(): void {
-  sessionStorage.removeItem(STORAGE_KEY);
+export async function getCurrentSession() {
+  return apiFetch<{ id: string; email: string; name: string; role: 'Admin' | 'Manager' | 'Viewer' }>(
+    '/auth/me',
+  );
 }

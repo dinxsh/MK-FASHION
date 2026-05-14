@@ -1,26 +1,35 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AutoCarousel from '@/components/AutoCarousel';
+import { API_BASE_URL } from '@/lib/api';
+import type { Product } from '@/lib/types/admin';
 
 export default function LehengasPage() {
-  const initialProducts = [
-    { name: "Burgundy Velvet Bridal Lehenga", price: 124500, style: "Bridal", img: "/images/burgundy_dress_1773723369596.png" },
-    { name: "Emerald Hand-embroidered Lehenga", price: 84999, style: "Festive", img: "/images/emerald_dress_1773723403267.png" },
-    { name: "Midnight Blue Sequined Lehenga", price: 65000, style: "Reception", img: "/images/blue_dress_1773723443478.png" },
-    { name: "Rose Gold Zari Work Lehenga", price: 95500, style: "Bridal", img: "/images/hero_banner_1773723337466.png" },
-    { name: "Classic Maroon Bridal Set", price: 145000, style: "Bridal", img: "/images/burgundy_dress_1773723369596.png" },
-    { name: "Ivory Pearl Embellished Lehenga", price: 112500, style: "Reception", img: "/images/emerald_dress_1773723403267.png" }
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [sort, setSort] = useState("default");
   const [filterType, setFilterType] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  let displayedProducts = [...initialProducts];
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/storefront/products`)
+      .then((response) => response.json())
+      .then((items: Product[]) => setProducts(items.filter((item) => item.category === 'lehengas')))
+      .catch(() => setProducts([]));
+  }, []);
+
+  const getStyle = (product: Product) => {
+    const haystack = `${product.name} ${product.shortDesc ?? ''}`.toLowerCase();
+    if (haystack.includes('bridal') || product.price >= 50000) return 'Bridal';
+    if (haystack.includes('reception') || haystack.includes('evening')) return 'Reception';
+    return 'Festive';
+  };
+
+  let displayedProducts = [...products];
 
   if (filterType !== "All") {
-     displayedProducts = displayedProducts.filter(p => p.style === filterType);
+     displayedProducts = displayedProducts.filter((p) => getStyle(p) === filterType);
   }
 
   if (sort === "price-low") {
@@ -95,12 +104,12 @@ export default function LehengasPage() {
          ) : (
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
                {displayedProducts.map((item, idx) => {
-                 const slug = item.name.toLowerCase().replace(/\s+/g, '-');
+                 const slug = item.slug ?? item.name.toLowerCase().replace(/\s+/g, '-');
                  return (
                  <a href={`/product/${slug}`} key={idx} className="group cursor-pointer block">
                    <div className="aspect-[4/5] bg-slate-200 w-full mb-6 overflow-hidden relative">
                         <AutoCarousel 
-                          images={[item.img, "/images/blue_dress_1773723443478.png", "/images/burgundy_dress_1773723369596.png"]}
+                          images={[item.image, "/images/blue_dress_1773723443478.png", "/images/burgundy_dress_1773723369596.png"]}
                           imgClassName="transition-transform duration-1000 group-hover:scale-110"
                         />
                       <div className="absolute top-4 left-4 inline-block bg-white/90 backdrop-blur-sm px-4 py-1 text-xs font-bold tracking-widest text-brand-burgundy shadow-sm">
@@ -114,7 +123,7 @@ export default function LehengasPage() {
                            <div className="flex text-brand-gold text-sm">★★★★★</div>
                            <span className="text-xs text-gray-400">({((idx * 17) % 80) + 12})</span>
                          </div>
-                         <p className="text-gray-500 text-sm tracking-wide">{item.style} Collection</p>
+                         <p className="text-gray-500 text-sm tracking-wide">{getStyle(item)} Collection</p>
                       </div>
                       <p className="font-semibold text-lg text-brand-burgundy">₹{item.price.toLocaleString('en-IN')}</p>
                    </div>

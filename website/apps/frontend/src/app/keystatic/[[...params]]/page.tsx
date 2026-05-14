@@ -1,4 +1,5 @@
-import { makePage } from '@keystatic/next/ui/app';
-import config from '../../../../keystatic.config';
+import { notFound } from 'next/navigation';
 
-export default makePage(config);
+export default function KeystaticDisabledPage() {
+  notFound();
+}

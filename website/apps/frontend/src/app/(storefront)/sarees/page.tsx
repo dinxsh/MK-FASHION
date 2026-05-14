@@ -1,26 +1,37 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AutoCarousel from '@/components/AutoCarousel';
+import { API_BASE_URL } from '@/lib/api';
+import type { Product } from '@/lib/types/admin';
 
 export default function SareesPage() {
-  const initialProducts = [
-    { name: "Classic Gold Embroidery Saree", price: 18900, category: "Embroidered", img: "/images/hero_banner_1773723337466.png" },
-    { name: "Emerald Silk Saree", price: 24999, category: "Silk", img: "/images/emerald_dress_1773723403267.png" },
-    { name: "Burgundy Velvet Saree", price: 34500, category: "Velvet", img: "/images/burgundy_dress_1773723369596.png" },
-    { name: "Royal Blue Georgette Saree", price: 15499, category: "Georgette", img: "/images/blue_dress_1773723443478.png" },
-    { name: "Crimson Red Kanjeevaram", price: 45000, category: "Silk", img: "/images/hero_banner_1773723337466.png" },
-    { name: "Mint Green Organza", price: 12500, category: "Organza", img: "/images/emerald_dress_1773723403267.png" }
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [sort, setSort] = useState("default");
   const [filterType, setFilterType] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  let displayedProducts = [...initialProducts];
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/storefront/products`)
+      .then((response) => response.json())
+      .then((items: Product[]) => setProducts(items.filter((item) => item.category === 'sarees')))
+      .catch(() => setProducts([]));
+  }, []);
+
+  const getType = (product: Product) => {
+    const haystack = `${product.name} ${product.shortDesc ?? ''}`.toLowerCase();
+    if (haystack.includes('silk') || haystack.includes('kanjeevaram') || haystack.includes('kanjivaram')) return 'Silk';
+    if (haystack.includes('georgette')) return 'Georgette';
+    if (haystack.includes('organza')) return 'Organza';
+    if (haystack.includes('velvet')) return 'Velvet';
+    return 'Embroidered';
+  };
+
+  let displayedProducts = [...products];
 
   if (filterType !== "All") {
-     displayedProducts = displayedProducts.filter(p => p.category === filterType);
+     displayedProducts = displayedProducts.filter((p) => getType(p) === filterType);
   }
 
   if (sort === "price-low") {
@@ -98,12 +109,12 @@ export default function SareesPage() {
          ) : (
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
                {displayedProducts.map((item, idx) => {
-                 const slug = item.name.toLowerCase().replace(/\s+/g, '-');
+                 const slug = item.slug ?? item.name.toLowerCase().replace(/\s+/g, '-');
                  return (
                  <a href={`/product/${slug}`} key={idx} className="group cursor-pointer block">
                    <div className="aspect-[3/4] bg-slate-200 w-full mb-5 overflow-hidden relative">
                         <AutoCarousel 
-                          images={[item.img, "/images/burgundy_dress_1773723369596.png", "/images/emerald_dress_1773723403267.png"]}
+                          images={[item.image, "/images/burgundy_dress_1773723369596.png", "/images/emerald_dress_1773723403267.png"]}
                           imgClassName="transition-transform duration-700 group-hover:scale-105"
                         />
                    </div>

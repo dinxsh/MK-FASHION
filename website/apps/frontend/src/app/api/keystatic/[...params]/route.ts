@@ -1,6 +1,7 @@
-import { makeRouteHandler } from '@keystatic/next/route-handler';
-import config from '../../../../../keystatic.config';
+export async function GET() {
+  return new Response('Not found', { status: 404 });
+}
 
-export const { POST, GET } = makeRouteHandler({
-  config,
-});
+export async function POST() {
+  return new Response('Not found', { status: 404 });
+}

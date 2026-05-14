@@ -1,0 +1,71 @@
+
+> frontend@1.0.0 dev
+> next dev --port 3001
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3001
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 4.3s
+ ○ Compiling /admin/login ...
+ ✓ Compiled /admin/login in 12.3s (604 modules)
+ GET /admin/login 200 in 12526ms
+ GET / 200 in 12626ms
+ GET / 200 in 81ms
+ ✓ Compiled /accessories in 401ms (596 modules)
+ GET /accessories 200 in 578ms
+ ✓ Compiled /kurtas in 354ms (602 modules)
+ GET /kurtas 200 in 446ms
+ ✓ Compiled /lehengas in 393ms (608 modules)
+ GET /lehengas 200 in 483ms
+ ✓ Compiled /sarees in 328ms (614 modules)
+ GET /sarees 200 in 396ms
+ GET /accessories 200 in 66ms
+ GET / 200 in 80ms
+ GET /lehengas 200 in 79ms
+ GET / 200 in 96ms
+ GET /admin/login 200 in 78ms
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 4.9s (1608 modules)
+ ○ Compiling /admin/products ...
+ ✓ Compiled /admin/products in 582ms (1630 modules)
+ ○ Compiling /admin/products/[id] ...
+ ✓ Compiled /admin/products/[id] in 550ms (1650 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1662ms (1645 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1850ms
+ GET /admin/products/new 200 in 139ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 37ms
+ ○ Compiling /kurtas ...
+ ✓ Compiled /kurtas in 1114ms (1646 modules)
+ GET /kurtas 200 in 1297ms
+ GET /kurtas 200 in 91ms
+ GET /kurtas 200 in 94ms
+ ✓ Compiled /lehengas in 503ms (1640 modules)
+ GET /lehengas 200 in 605ms
+ GET /kurtas 200 in 58ms
+ ✓ Compiled in 2.3s (1644 modules)
+ ✓ Compiled in 1716ms (1630 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 887ms (1633 modules)
+ GET /_next/static/css/app/admin/layout.css 404 in 1193ms
+ GET /_next/static/css/app/(storefront)/layout.css 404 in 1200ms
+ ○ Compiling /admin/products ...
+ ✓ Compiled /admin/products in 810ms (1643 modules)
+ GET /admin/products 200 in 105ms
+ GET /_next/static/css/app/admin/layout.css?v=1778784974037 404 in 77ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 41ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 107ms
+ GET /_next/static/chunks/main-app.js?v=1778784974037 404 in 107ms
+ GET /_next/static/chunks/app/admin/products/page.js 404 in 106ms
+ GET /admin/products 200 in 52ms
+ GET /_next/static/css/app/admin/layout.css?v=1778784980745 404 in 64ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 69ms
+ GET /_next/static/chunks/main-app.js?v=1778784980745 404 in 85ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 83ms
+ GET /_next/static/chunks/app/admin/products/page.js 404 in 80ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.4s (1862 modules)
+ GET /kurtas 500 in 3847ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 145ms

@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, isAuthenticated } from '@/lib/adminAuth';
-import { Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
+import { login, getCurrentSession } from '@/lib/adminAuth';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('admin@mkfashion.in');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -13,36 +14,28 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated()) router.push('/admin');
+    getCurrentSession().then(() => router.push('/admin')).catch(() => undefined);
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      if (login(password)) {
-        toast.success('Welcome back, Admin! 👋');
-        router.push('/admin');
-      } else {
-        toast.error('Incorrect access key. Try: mkfashion2026');
-        setLoading(false);
-        setShakeError(true);
-        setTimeout(() => setShakeError(false), 600);
-      }
-    }, 700);
-  };
-
-  const bypassLogin = () => {
-    sessionStorage.setItem('mk_admin_auth', 'true');
-    toast.success('Logged in successfully!');
-    router.push('/admin');
+    try {
+      await login(email, password);
+      toast.success('Welcome back');
+      router.push('/admin');
+    } catch {
+      toast.error('Invalid email or password');
+      setShakeError(true);
+      setTimeout(() => setShakeError(false), 600);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#050108] flex overflow-hidden">
-      {/* Left side — branding panel */}
       <div className="hidden lg:flex flex-col justify-between w-2/5 bg-gradient-to-br from-[#1a0a2e] via-[#2d1154] to-[#0a0118] p-12 relative overflow-hidden">
-        {/* Decorative blobs */}
         <div className="absolute top-[-20%] right-[-20%] w-[70%] h-[70%] bg-purple-600/20 rounded-full blur-[100px]" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-600/10 rounded-full blur-[80px]" />
 
@@ -55,56 +48,56 @@ export default function AdminLoginPage() {
             Admin<br />Command<br />Center
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-            Manage your entire fashion empire from one powerful dashboard. Products, orders, customers, analytics — all in one place.
+            Secure administration for products, orders, customers, promotions, and store settings.
           </p>
-        </div>
-
-        <div className="relative z-10 space-y-4">
-          {[
-            { label: 'Total Products', value: '86', icon: '📦' },
-            { label: 'Pending Orders', value: '14', icon: '🛒' },
-            { label: 'Monthly Revenue', value: '₹4.2L', icon: '💰' },
-          ].map(stat => (
-            <div key={stat.label} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 backdrop-blur-sm">
-              <span className="text-xl">{stat.icon}</span>
-              <div>
-                <div className="text-white font-bold text-lg leading-tight">{stat.value}</div>
-                <div className="text-slate-500 text-xs">{stat.label}</div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* Right side — form */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
         <div className="absolute top-[-15%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-sm relative z-10">
-          {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center text-white font-black">MK</div>
             <span className="text-white font-bold text-lg">MK Fashion Admin</span>
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-1">Sign in</h2>
-          <p className="text-slate-500 text-sm mb-8">Enter your admin access key to continue</p>
+          <p className="text-slate-500 text-sm mb-8">Use your admin email and password to continue</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@mkfashion.in"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-white placeholder-slate-700 focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all"
+                  required
+                />
+              </div>
+            </div>
+
             <div className={`space-y-1.5 ${shakeError ? 'animate-[shake_0.3s_ease-in-out]' : ''}`}>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Access Key</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <ShieldCheck size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="mkfashion2026"
+                  placeholder="Enter password"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-12 py-3.5 text-white placeholder-slate-700 focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all"
                   required
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-purple-400 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-purple-400 transition-colors"
+                >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -121,19 +114,7 @@ export default function AdminLoginPage() {
                 <>Sign In <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
               )}
             </button>
-
-            <button
-              type="button"
-              onClick={bypassLogin}
-              className="w-full bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] text-slate-500 hover:text-slate-300 text-xs font-semibold py-2.5 rounded-xl transition-all"
-            >
-              ⚡ Quick Demo Access (Skip Login)
-            </button>
           </form>
-
-          <p className="text-slate-700 text-[10px] text-center mt-6">
-            © 2026 MK Fashion · All rights reserved
-          </p>
         </div>
       </div>
     </div>

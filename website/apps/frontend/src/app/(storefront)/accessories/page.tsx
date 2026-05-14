@@ -1,21 +1,32 @@
 "use client";
-import React from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AutoCarousel from '@/components/AutoCarousel';
+import { API_BASE_URL } from '@/lib/api';
+import type { Product } from '@/lib/types/admin';
 
 export default function AccessoriesPage() {
-  const initialProducts = [
-    { name: "Kundan Choker Set", price: 24500, category: "Jewelry Sets", img: "/images/emerald_dress_1773723403267.png" },
-    { name: "Polki Drop Earrings", price: 8999, category: "Earrings", img: "/images/burgundy_dress_1773723369596.png" },
-    { name: "Velvet Embroidered Potli", price: 4500, category: "Potlis & Bags", img: "/images/hero_banner_1773723337466.png" },
-    { name: "Pearl Statement Maang Tikka", price: 6400, category: "Hair Accessories", img: "/images/blue_dress_1773723443478.png" },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [categoryFilter, setCategoryFilter] = useState("All Accessories");
   const [priceFilter, setPriceFilter] = useState("All");
 
-  const filteredProducts = initialProducts.filter(p => {
-     let catMatch = categoryFilter === "All Accessories" || p.category === categoryFilter;
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/storefront/products`)
+      .then((response) => response.json())
+      .then((items: Product[]) => setProducts(items.filter((item) => item.category === 'accessories')))
+      .catch(() => setProducts([]));
+  }, []);
+
+  const getAccessoryType = (product: Product) => {
+    const haystack = `${product.name} ${product.shortDesc ?? ''}`.toLowerCase();
+    if (haystack.includes('earring')) return 'Earrings';
+    if (haystack.includes('potli') || haystack.includes('bag')) return 'Potlis & Bags';
+    if (haystack.includes('tikka')) return 'Hair Accessories';
+    return 'Jewelry Sets';
+  };
+
+  const filteredProducts = products.filter((p) => {
+     let catMatch = categoryFilter === "All Accessories" || getAccessoryType(p) === categoryFilter;
      let priceMatch = true;
      if (priceFilter === "Under ₹5,000") priceMatch = p.price < 5000;
      else if (priceFilter === "₹5,000 - ₹10,000") priceMatch = p.price >= 5000 && p.price <= 10000;
@@ -83,12 +94,12 @@ export default function AccessoriesPage() {
                  ) : (
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                        {filteredProducts.map((item, idx) => {
-                         const slug = item.name.toLowerCase().replace(/\s+/g, '-');
+                         const slug = item.slug ?? item.name.toLowerCase().replace(/\s+/g, '-');
                          return (
                          <a href={`/product/${slug}`} key={idx} className="group cursor-pointer block">
                            <div className="aspect-square bg-slate-50 border border-brand-burgundy/5 w-full mb-4 overflow-hidden relative flex items-center justify-center p-4">
                               <AutoCarousel 
-                                images={[item.img, "/images/emerald_dress_1773723403267.png", "/images/blue_dress_1773723443478.png"]}
+                                images={[item.image, "/images/emerald_dress_1773723403267.png", "/images/blue_dress_1773723443478.png"]}
                                 imgClassName="rounded shadow-sm transition-transform duration-500 group-hover:scale-105"
                               />
                               <div className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-brand-burgundy transition-colors">
@@ -96,7 +107,7 @@ export default function AccessoriesPage() {
                               </div>
                            </div>
                            <div>
-                              <p className="text-xs tracking-widest text-brand-gold mb-1">{item.category}</p>
+                              <p className="text-xs tracking-widest text-brand-gold mb-1">{getAccessoryType(item)}</p>
                               <h4 className="font-serif text-lg text-gray-900 group-hover:text-brand-burgundy transition-colors line-clamp-1 mb-1">{item.name}</h4>
                               <div className="flex items-center gap-1 mb-1">
                                 <div className="flex text-brand-gold text-xs">★★★★★</div>

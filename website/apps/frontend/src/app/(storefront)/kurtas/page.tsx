@@ -1,22 +1,31 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AutoCarousel from '@/components/AutoCarousel';
+import { API_BASE_URL } from '@/lib/api';
+import type { Product } from '@/lib/types/admin';
 
 export default function KurtasPage() {
-  const initialProducts = [
-    { name: "Royal Blue Silk Kaftan", price: 12499, category: "Straight Cut", img: "/images/blue_dress_1773723443478.png" },
-    { name: "Emerald Anarkali Suit", price: 14999, category: "Anarkalis", img: "/images/emerald_dress_1773723403267.png" },
-    { name: "Burgundy Velvet Kurta Set", price: 18500, category: "Straight Cut", img: "/images/burgundy_dress_1773723369596.png" },
-    { name: "Ivory Chanderi Kurta", price: 8900, category: "Anarkalis", img: "/images/hero_banner_1773723337466.png" },
-    { name: "Mustard Yellow Festive Suit", price: 11000, category: "Straight Cut", img: "/images/blue_dress_1773723443478.png" },
-    { name: "Mint Green Sharara Set", price: 16500, category: "Sharara Sets", img: "/images/emerald_dress_1773723403267.png" }
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [filter, setFilter] = useState("View All");
 
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/storefront/products`)
+      .then((response) => response.json())
+      .then((items: Product[]) => setProducts(items.filter((item) => item.category === 'kurtas')))
+      .catch(() => setProducts([]));
+  }, []);
+
+  const getKurtaType = (product: Product) => {
+    const haystack = `${product.name} ${product.shortDesc ?? ''}`.toLowerCase();
+    if (haystack.includes('anarkali')) return 'Anarkalis';
+    if (haystack.includes('sharara')) return 'Sharara Sets';
+    return 'Straight Cut';
+  };
+
   const filteredProducts = filter === "View All" 
-    ? initialProducts 
-    : initialProducts.filter(p => p.category === filter);
+    ? products 
+    : products.filter((product) => getKurtaType(product) === filter);
 
   return (
     <div className="w-full">
@@ -45,12 +54,12 @@ export default function KurtasPage() {
          ) : (
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
                {filteredProducts.map((item, idx) => {
-                 const slug = item.name.toLowerCase().replace(/\s+/g, '-');
+                 const slug = item.slug ?? item.name.toLowerCase().replace(/\s+/g, '-');
                  return (
                  <a href={`/product/${slug}`} key={idx} className="group cursor-pointer flex flex-col items-center text-center block">
                    <div className="aspect-[3/4] bg-slate-100 w-full mb-6 overflow-hidden relative rounded-sm shadow-sm group-hover:shadow-xl transition-shadow duration-500">
                         <AutoCarousel 
-                          images={[item.img, "/images/hero_banner_1773723337466.png", "/images/emerald_dress_1773723403267.png"]}
+                          images={[item.image, "/images/hero_banner_1773723337466.png", "/images/emerald_dress_1773723403267.png"]}
                           imgClassName="transition-transform duration-700 group-hover:scale-105"
                         />
 

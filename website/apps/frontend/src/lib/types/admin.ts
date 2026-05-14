@@ -5,6 +5,7 @@ export type ReviewStatus = 'Approved' | 'Pending' | 'Rejected';
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   category: string;
   price: number;
@@ -12,11 +13,16 @@ export interface Product {
   stock: number;
   status: ProductStatus;
   image: string;
+  images?: string[];
   sku: string;
   sold: number;
   shortDesc?: string;
+  about?: string;
+  details?: string[];
   tags?: string[];
   weight?: string;
+  reviewRating?: number;
+  reviewCount?: number;
 }
 
 export interface Order {
@@ -83,6 +89,61 @@ export interface StaffMember {
   avatar: string;
   lastLogin: string;
   status: 'Active' | 'Invited';
+}
+
+export interface GeneralSettings {
+  storeName: string;
+  storeEmail: string;
+  storePhone: string;
+  storeAddress: string;
+  currency: string;
+  gst: string;
+  timezone: string;
+}
+
+export interface PaymentSettings {
+  upi: boolean;
+  cards: boolean;
+  cod: boolean;
+  wallets: boolean;
+  emi: boolean;
+}
+
+export interface ShippingSettings {
+  freeShipThreshold: string;
+  stdDeliveryDays: string;
+}
+
+export interface NotificationSettings {
+  newOrder: boolean;
+  lowStock: boolean;
+  dailySummary: boolean;
+  newReview: boolean;
+  newCustomer: boolean;
+}
+
+export interface AppearanceSettings {
+  accentColor: string;
+  logoUrl: string;
+}
+
+export interface ContentSettings {
+  headline: string;
+  subheadline: string;
+  ctaText: string;
+  announcement: string;
+  showAnnouncement: boolean;
+  featuredCollections: string[];
+}
+
+export interface SettingsPayload {
+  general: GeneralSettings;
+  payment: PaymentSettings;
+  shipping: ShippingSettings;
+  notifications: NotificationSettings;
+  appearance: AppearanceSettings;
+  content: ContentSettings;
+  team: StaffMember[];
 }
 
 export interface StatData {

@@ -1,20 +1,32 @@
 'use client';
-import { mockStats, mockProducts } from '@/lib/mockData';
+import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import type { Product, StatData } from '@/lib/types/admin';
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
-const CAT_DATA = [
-  { cat: 'Sarees', revenue: 145000, orders: 56 },
-  { cat: 'Lehengas', revenue: 238000, orders: 19 },
-  { cat: 'Kurtas', revenue: 89000, orders: 42 },
-  { cat: 'Accessories', revenue: 48000, orders: 112 },
-];
-
-const PIE_COLORS = ['#7c3aed','#c084fc','#f59e0b','#10b981'];
+const PIE_COLORS = ['#7c3aed', '#c084fc', '#f59e0b', '#10b981', '#ef4444', '#6b7280'];
 
 export default function AnalyticsPage() {
+  const [stats, setStats] = useState<StatData | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      apiFetch<StatData>('/dashboard/summary'),
+      apiFetch<Product[]>('/products'),
+    ]).then(([summary, productData]) => {
+      setStats(summary);
+      setProducts(productData);
+    }).catch(() => undefined);
+  }, []);
+
+  if (!stats) {
+    return <div className="text-slate-500">Loading analytics...</div>;
+  }
+
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto">
       <div>
@@ -22,32 +34,29 @@ export default function AnalyticsPage() {
         <p className="text-slate-400 text-sm mt-0.5">Sales, traffic, and performance insights</p>
       </div>
 
-      {/* Revenue Chart */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-        <h2 className="font-semibold text-white mb-5">Revenue Trend (Last 30 Days)</h2>
+        <h2 className="font-semibold text-white mb-5">Revenue Trend</h2>
         <ResponsiveContainer width="100%" height={250}>
-          <AreaChart data={mockStats.revenueChart}>
+          <AreaChart data={stats.revenueChart}>
             <defs>
               <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} interval={4} />
-            <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
-            <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }}
-              formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
+            <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `Rs ${(Number(v || 0) / 1000).toFixed(0)}k`} />
+            <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }} formatter={(v) => [`Rs ${Number(v || 0).toLocaleString()}`, 'Revenue']} />
             <Area type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fill="url(#analyticsGrad)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Orders Volume */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <h2 className="font-semibold text-white mb-5">Daily Orders (Last 14 Days)</h2>
+          <h2 className="font-semibold text-white mb-5">Daily Orders</h2>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={mockStats.ordersChart} barSize={20}>
+            <BarChart data={stats.ordersChart} barSize={20}>
               <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }} />
@@ -56,33 +65,19 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Category Performance Pie */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <h2 className="font-semibold text-white mb-5">Revenue by Category</h2>
-          <div className="flex gap-6 items-center">
-            <ResponsiveContainer width="50%" height={160}>
-              <PieChart>
-                <Pie data={CAT_DATA} dataKey="revenue" nameKey="cat" cx="50%" cy="50%" outerRadius={70} innerRadius={45} paddingAngle={3}>
-                  {CAT_DATA.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }}
-                  formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex-1 space-y-2">
-              {CAT_DATA.map((c, i) => (
-                <div key={c.cat} className="flex items-center gap-2 text-sm">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PIE_COLORS[i] }} />
-                  <span className="text-slate-300 flex-1">{c.cat}</span>
-                  <span className="text-white font-semibold">₹{(c.revenue / 1000).toFixed(0)}k</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <h2 className="font-semibold text-white mb-5">Order Status Mix</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={stats.orderStatusChart} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={45} paddingAngle={3}>
+                {stats.orderStatusChart.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Top Products Table */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
         <h2 className="font-semibold text-white mb-5">Top Selling Products</h2>
         <table className="w-full text-sm">
@@ -95,18 +90,18 @@ export default function AnalyticsPage() {
             </tr>
           </thead>
           <tbody>
-            {[...mockProducts].sort((a, b) => b.sold - a.sold).map((p, i) => (
-              <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+            {[...products].sort((a, b) => b.sold - a.sold).map((product, index) => (
+              <tr key={product.id} className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
                 <td className="py-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-600 text-xs font-mono w-4">#{i+1}</span>
-                    <img src={p.image} alt={p.name} className="w-8 h-8 rounded-lg object-cover bg-white/5" />
-                    <span className="text-white font-medium">{p.name}</span>
+                    <span className="text-slate-600 text-xs font-mono w-4">#{index + 1}</span>
+                    <img src={product.image} alt={product.name} className="w-8 h-8 rounded-lg object-cover bg-white/5" />
+                    <span className="text-white font-medium">{product.name}</span>
                   </div>
                 </td>
-                <td className="py-3 text-slate-400 capitalize">{p.category}</td>
-                <td className="py-3 text-slate-300">{p.sold}</td>
-                <td className="py-3 text-emerald-400 font-semibold">₹{(p.sold * p.price).toLocaleString()}</td>
+                <td className="py-3 text-slate-400 capitalize">{product.category}</td>
+                <td className="py-3 text-slate-300">{product.sold}</td>
+                <td className="py-3 text-emerald-400 font-semibold">Rs {(product.sold * product.price).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
