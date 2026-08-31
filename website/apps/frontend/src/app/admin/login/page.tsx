@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, isAuthenticated } from '@/lib/adminAuth';
-import { Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
+import { getCurrentAdmin, login, isAuthenticated } from '@/lib/adminAuth';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('admin@mkfashion.in');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -13,29 +14,30 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated()) router.push('/admin');
+    if (!isAuthenticated()) return;
+
+    getCurrentAdmin().then((admin) => {
+      if (admin) {
+        router.push('/admin');
+      }
+    });
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      if (login(password)) {
-        toast.success('Welcome back, Admin! 👋');
-        router.push('/admin');
-      } else {
-        toast.error('Incorrect access key. Try: mkfashion2026');
-        setLoading(false);
-        setShakeError(true);
-        setTimeout(() => setShakeError(false), 600);
-      }
-    }, 700);
-  };
-
-  const bypassLogin = () => {
-    sessionStorage.setItem('mk_admin_auth', 'true');
-    toast.success('Logged in successfully!');
-    router.push('/admin');
+    try {
+      const user = await login(email, password);
+      toast.success(`Welcome back, ${user.name}!`);
+      router.push('/admin');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Incorrect email or password';
+      toast.error(message);
+      setLoading(false);
+      setShakeError(true);
+      setTimeout(() => setShakeError(false), 600);
+    }
   };
 
   return (
@@ -88,18 +90,33 @@ export default function AdminLoginPage() {
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-1">Sign in</h2>
-          <p className="text-slate-500 text-sm mb-8">Enter your admin access key to continue</p>
+          <p className="text-slate-500 text-sm mb-8">Sign in with your admin email and password</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@mkfashion.in"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-white placeholder-slate-700 focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all"
+                  required
+                />
+              </div>
+            </div>
+
             <div className={`space-y-1.5 ${shakeError ? 'animate-[shake_0.3s_ease-in-out]' : ''}`}>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Access Key</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <ShieldCheck size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="mkfashion2026"
+                  placeholder="Enter your password"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-12 py-3.5 text-white placeholder-slate-700 focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all"
                   required
                 />
@@ -120,14 +137,6 @@ export default function AdminLoginPage() {
               ) : (
                 <>Sign In <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
               )}
-            </button>
-
-            <button
-              type="button"
-              onClick={bypassLogin}
-              className="w-full bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] text-slate-500 hover:text-slate-300 text-xs font-semibold py-2.5 rounded-xl transition-all"
-            >
-              ⚡ Quick Demo Access (Skip Login)
             </button>
           </form>
 

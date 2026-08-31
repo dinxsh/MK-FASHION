@@ -6,7 +6,7 @@ import AdminTopbar from '@/components/admin/AdminTopbar';
 import { Toaster } from 'react-hot-toast';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { isAuthenticated } from '@/lib/adminAuth';
+import { getCurrentAdmin, isAuthenticated } from '@/lib/adminAuth';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -18,12 +18,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    // Basic Client-side Auth Guard
-    if (!isLoginPage && !isAuthenticated()) {
-      router.push('/admin/login');
-    } else {
+    let isMounted = true;
+
+    if (isLoginPage) {
       setIsReady(true);
+      return () => {
+        isMounted = false;
+      };
     }
+
+    if (!isAuthenticated()) {
+      router.push('/admin/login');
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    getCurrentAdmin().then((admin) => {
+      if (!isMounted) return;
+
+      if (!admin) {
+        router.push('/admin/login');
+        return;
+      }
+
+      setIsReady(true);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [pathname, router, isLoginPage]);
 
   if (!isReady && !isLoginPage) {

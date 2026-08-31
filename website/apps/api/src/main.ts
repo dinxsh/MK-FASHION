@@ -1,12 +1,23 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // Setting global prefix for API routing
+
   app.setGlobalPrefix('api/v1');
-  
-  // Enable CORS
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
   app.enableCors({
     origin: process.env.APP_URL || 'http://localhost:3000',
     credentials: true,
@@ -14,7 +25,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`Application core is running on: http://localhost:${port}`);
+  console.log(`MK Fashion API is running on: http://localhost:${port}/api/v1`);
 }
 
 bootstrap();
