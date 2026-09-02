@@ -12,7 +12,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "db:migrate": "pnpm prisma:migrate:dev",
-    "db:seed": "pnpm exec ts-node --transpile-only prisma/seed.ts",
+    "db:seed": "ts-node --transpile-only prisma/seed.ts",
     "es:reindex": "echo 'Run ES reindex...'"
   },
   "dependencies": {

@@ -1,44 +1,23 @@
-import { reader } from '@/lib/keystatic';
-import ProductClient from './ProductClient';
+'use client';
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  // Fetch from the local Keystatic CMS
-  const cmsProduct = await reader.collections.products.read(params.slug);
-  
-  // Format the CMS response to match our ProductClient structured object
-  // If the product doesn't exist yet in the CMS, use stunning fallback mock data to keep the prototype impressive
-  const product = cmsProduct ? {
-    name: cmsProduct.title,
-    price: cmsProduct.price,
-    category: cmsProduct.category,
-    shortDesc: cmsProduct.shortDesc || "A timeless masterpiece curated by MK Fashion, featuring intricate hand-details, impeccable silhouette, and the finest fabrics locally sourced.",
-    images: cmsProduct.images?.length ? cmsProduct.images : ["/images/burgundy_dress_1773723369596.png"],
-    details: cmsProduct.details?.length ? cmsProduct.details : ["Material: Premium Micro-Velvet / Pure Silk blend", "Care Instructions: Dry Clean Only to preserve thread-work"],
-    about: cmsProduct.about || "Our master artisans in Jaipur spend over 200 hours hand-embroidering each individual piece. This collection pays homage to long-standing royal heritage while seamlessly offering a comfortable, modern silhouette. Every stitch, every thread tells a unique story of cultural authenticity and artisan traceability.",
-    reviews: {
-      rating: cmsProduct.reviewRating || 5,
-      count: cmsProduct.reviewCount || 10,
-      items: [
-        { name: "Priya S.", rating: 5, date: "October 12, 2025", comment: "Absolutely stunning craftsmanship. I wore this to my brother's wedding and received non-stop compliments! The fabric flows perfectly and the fit is incredibly flattering.", images: ["/images/burgundy_dress_1773723369596.png", "/images/emerald_dress_1773723403267.png"] },
-        { name: "Anita M.", rating: 5, date: "September 04, 2025", comment: "The material feels incredibly luxurious and the embroidery is flawless. Worth every penny. MK Fashion has gained a lifetime customer.", images: ["/images/blue_dress_1773723443478.png"] }
-      ]
-    }
-  } : {
-    name: params.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-    price: 24500,
-    category: 'lehengas',
-    shortDesc: "A timeless masterpiece curated by MK Fashion, featuring intricate hand-details, impeccable silhouette, and the finest fabrics locally sourced to ensure you make a statement at any royal occasion.",
-    images: ["/images/burgundy_dress_1773723369596.png", "/images/emerald_dress_1773723403267.png", "/images/blue_dress_1773723443478.png"],
-    reviews: {
-      rating: 4.8, count: 124, items: [
-        { name: "Priya S.", rating: 5, date: "October 12, 2025", comment: "Absolutely stunning craftsmanship.", images: ["/images/burgundy_dress_1773723369596.png", "/images/emerald_dress_1773723403267.png"] },
-        { name: "Anita M.", rating: 5, date: "September 04, 2025", comment: "The material feels incredibly luxurious.", images: ["/images/blue_dress_1773723443478.png"] },
-        { name: "Smriti R.", rating: 4, date: "July 12, 2025", comment: "Beautiful attire, received numerous compliments.", images: ["/images/hero_banner_1773723337466.png", "/images/burgundy_dress_1773723369596.png", "/images/blue_dress_1773723443478.png"] },
-      ]
-    },
-    about: "Our master artisans in Jaipur spend over 200 hours hand-embroidering each individual piece. This collection pays homage to long-standing royal heritage while seamlessly offering a comfortable, modern silhouette. Every stitch, every thread tells a unique story of cultural authenticity and artisan traceability.",
-    details: ["Material: Premium Micro-Velvet / Pure Silk blend", "Work: Authentic Gold Zari & Sequins Hand Embroidery", "Care Instructions: Dry Clean Only to preserve thread-work", "Includes: Fully stitched attire, matching blouse piece, and Dupatta"]
-  };
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { MessageCircle } from 'lucide-react';
+import { getStoreProduct, StoreProduct } from '@/lib/storeApi';
+import { getWhatsAppOrderUrl } from '@/lib/whatsapp';
 
-  return <ProductClient product={product} />;
+export default function ProductPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [product, setProduct] = useState<StoreProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { getStoreProduct(slug).then(setProduct).catch(() => setProduct(null)).finally(() => setLoading(false)); }, [slug]);
+  if (loading) return <div className="py-24 text-center text-gray-500">Loading product...</div>;
+  if (!product) return <div className="py-24 text-center"><p className="font-serif text-3xl text-gray-900">Product not found</p><Link href="/" className="mt-5 inline-block text-brand-burgundy underline">Back to shop</Link></div>;
+
+  const whatsappUrl = getWhatsAppOrderUrl(product);
+  const inStock = (product.inventoryItem?.availableQty || 0) > 0;
+
+  return <main className="mx-auto grid max-w-6xl gap-10 px-8 py-16 md:grid-cols-2"><div className="aspect-[3/4] overflow-hidden bg-stone-100"><img src={product.images[0]?.url || '/images/hero_banner_1773723337466.png'} alt={product.name} className="h-full w-full object-cover" /></div><div className="flex flex-col justify-center"><p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-burgundy">{product.category?.name || 'MK Fashion'}</p><h1 className="mt-3 font-serif text-4xl text-gray-900">{product.name}</h1><p className="mt-5 text-2xl font-semibold text-gray-800">₹{Number(product.price).toLocaleString('en-IN')}</p><p className="mt-6 leading-relaxed text-gray-600">{product.description || 'A beautiful piece, selected by MK Fashion.'}</p><p className="mt-6 text-sm text-gray-500">{inStock ? `${product.inventoryItem?.availableQty} available` : 'Currently out of stock'}</p>{inStock && whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-900/20 hover:bg-[#1fbd59]"><MessageCircle size={19} /> Order on WhatsApp</a> : !inStock ? <p className="mt-8 text-sm font-semibold text-red-600">This product is currently unavailable.</p> : <p className="mt-8 text-sm text-gray-500">WhatsApp ordering is being configured.</p>}<Link href="/" className="mt-5 inline-block text-sm font-bold tracking-wide text-brand-burgundy underline">Continue shopping</Link></div></main>;
 }

@@ -10,6 +10,7 @@ coverage/
 
 # next.js
 .next/
+.next-cache/
 out/
 
 # production
@@ -25,6 +26,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+frontend-dev.log
+frontend-dev.err.log
 
 # local env files
 .env*.local
@@ -49,3 +52,6 @@ __pycache__/
 venv/
 env/
 .pytest_cache/
+
+# Local product uploads are stored on disk, not in source control.
+website/apps/api/uploads/

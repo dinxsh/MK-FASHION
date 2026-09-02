@@ -36,7 +36,7 @@ export default function AnalyticsPage() {
             <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} interval={4} />
             <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
             <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }}
-              formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
+              formatter={(value) => [`₹${Number(value ?? 0).toLocaleString()}`, 'Revenue'] as [string, string]} />
             <Area type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fill="url(#analyticsGrad)" />
           </AreaChart>
         </ResponsiveContainer>
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
                   {CAT_DATA.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
                 </Pie>
                 <Tooltip contentStyle={{ background: '#1a0a2e', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: '#f9fafb', fontSize: 12 }}
-                  formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
+                  formatter={(value) => [`₹${Number(value ?? 0).toLocaleString()}`, 'Revenue'] as [string, string]} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex-1 space-y-2">

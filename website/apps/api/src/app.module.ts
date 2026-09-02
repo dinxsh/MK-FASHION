@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { ProductsModule } from './modules/products/products.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { appConfig } from './config/app.config';
 import { validateEnv } from './config/env.validation';
@@ -17,6 +20,9 @@ import { validateEnv } from './config/env.validation';
     PrismaModule,
     HealthModule,
     AuthModule,
+    ProductsModule,
+    OrdersModule,
+    UploadsModule,
   ],
   controllers: [],
   providers: [],
