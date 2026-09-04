@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Keep generated Next files out of OneDrive's broken `.next` placeholder.
-  distDir: '.next-cache',
+  // Keep generated Next files out of OneDrive's broken `.next` placeholder locally.
+  // Vercel expects the default `.next` output directory for deployment.
+  distDir: process.env.VERCEL ? '.next' : '.next-cache',
   images: {
     remotePatterns: [
       {
