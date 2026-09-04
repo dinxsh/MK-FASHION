@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { mockReviews } from '@/lib/mockData';
+import { useEffect, useState } from 'react';
+import { ApiReview, deleteReview, getAdminReviews, updateReviewStatus } from '@/lib/adminApi';
 import type { Review, ReviewStatus } from '@/lib/types/admin';
 import { Check, X, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -14,16 +14,35 @@ const STATUS_STYLES: Record<ReviewStatus, string> = {
 const TABS: Array<ReviewStatus | 'All'> = ['All', 'Pending', 'Approved', 'Rejected'];
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [tab, setTab] = useState<ReviewStatus | 'All'>('All');
+
+  useEffect(() => {
+    getAdminReviews()
+      .then((items) => setReviews(items.map(toReview)))
+      .catch((error) => toast.error(error instanceof Error ? error.message : 'Unable to load reviews'));
+  }, []);
 
   const filtered = tab === 'All' ? reviews : reviews.filter(r => r.status === tab);
 
-  const updateStatus = (id: string, status: ReviewStatus) => {
-    setReviews(rs => rs.map(r => r.id === id ? { ...r, status } : r));
-    toast.success(`Review ${status.toLowerCase()}`);
+  const updateStatus = async (id: string, status: ReviewStatus) => {
+    try {
+      const updated = await updateReviewStatus(id, status.toUpperCase() as ApiReview['status']);
+      setReviews(rs => rs.map(r => r.id === id ? toReview(updated) : r));
+      toast.success(`Review ${status.toLowerCase()}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to update review');
+    }
   };
-  const remove = (id: string) => { setReviews(rs => rs.filter(r => r.id !== id)); toast.success('Review deleted'); };
+  const remove = async (id: string) => {
+    try {
+      await deleteReview(id);
+      setReviews(rs => rs.filter(r => r.id !== id));
+      toast.success('Review deleted');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to delete review');
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -85,4 +104,17 @@ export default function ReviewsPage() {
       </div>
     </div>
   );
+}
+
+function toReview(review: ApiReview): Review {
+  return {
+    id: review.id,
+    productName: review.product.name,
+    productImage: review.product.images[0]?.url || '/placeholder-product.png',
+    customer: review.customer.name,
+    rating: review.rating,
+    text: review.text,
+    date: new Date(review.createdAt).toLocaleDateString(),
+    status: `${review.status[0]}${review.status.slice(1).toLowerCase()}` as ReviewStatus,
+  };
 }

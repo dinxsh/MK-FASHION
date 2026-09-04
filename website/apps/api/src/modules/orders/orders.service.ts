@@ -20,6 +20,12 @@ export class OrdersService {
     });
   }
 
+  async findOne(id: string) {
+    const order = await this.prisma.order.findUnique({ where: { id }, include: orderInclude });
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
   async create(dto: CreateOrderDto) {
     if (dto.items.length === 0) {
       throw new BadRequestException('At least one product is required');

@@ -1,7 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, ChevronRight, ChevronDown, Edit2, Trash2, GripVertical, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ApiCategory, deleteCategory, getAdminCategories } from '@/lib/adminApi';
 
 interface CategoryNode {
   id: string;
@@ -12,52 +13,32 @@ interface CategoryNode {
   image?: string;
 }
 
-const INITIAL_CATEGORIES: CategoryNode[] = [
-  {
-    id: '1',
-    name: 'Sarees',
-    slug: 'sarees',
-    itemCount: 42,
-    children: [
-      { id: '1-1', name: 'Silk Sarees', slug: 'silk-sarees', itemCount: 18 },
-      { id: '1-2', name: 'Banarasi', slug: 'banarasi', itemCount: 12 },
-      { id: '1-3', name: 'Chiffon', slug: 'chiffon', itemCount: 12 },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Lehengas',
-    slug: 'lehengas',
-    itemCount: 25,
-    children: [
-      { id: '2-1', name: 'Bridal', slug: 'bridal-lehengas', itemCount: 15 },
-      { id: '2-2', name: 'Party Wear', slug: 'party-lehengas', itemCount: 10 },
-    ]
-  },
-  {
-    id: '3',
-    name: 'Kurtas',
-    slug: 'kurtas',
-    itemCount: 38,
-  },
-  {
-    id: '4',
-    name: 'Accessories',
-    slug: 'accessories',
-    itemCount: 112,
-  }
-];
-
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<CategoryNode[]>(INITIAL_CATEGORIES);
-  const [expanded, setExpanded] = useState<string[]>(['1', '2']);
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
+  const [expanded, setExpanded] = useState<string[]>([]);
+
+  useEffect(() => {
+    getAdminCategories()
+      .then((items) => {
+        const categoryTree = items.map(toCategoryNode);
+        setCategories(categoryTree);
+        setExpanded(categoryTree.filter((category) => category.children?.length).map((category) => category.id));
+      })
+      .catch((error) => toast.error(error instanceof Error ? error.message : 'Unable to load categories'));
+  }, []);
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const handleDelete = (id: string) => {
-    toast.error('Delete functionality disabled in demo');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCategory(id);
+      setCategories((items) => removeCategory(items, id));
+      toast.success('Category deleted');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to delete category');
+    }
   };
 
   return (
@@ -110,6 +91,23 @@ export default function CategoriesPage() {
       </div>
     </div>
   );
+}
+
+function toCategoryNode(category: ApiCategory): CategoryNode {
+  return {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    itemCount: category._count.products,
+    image: category.imageUrl ?? undefined,
+    children: category.children.map(toCategoryNode),
+  };
+}
+
+function removeCategory(categories: CategoryNode[], id: string): CategoryNode[] {
+  return categories
+    .filter((category) => category.id !== id)
+    .map((category) => ({ ...category, children: category.children ? removeCategory(category.children, id) : undefined }));
 }
 
 function CategoryItem({ 

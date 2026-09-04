@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { OperationsModule } from './modules/operations/operations.module';
 import { ProductsModule } from './modules/products/products.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -22,6 +23,7 @@ import { validateEnv } from './config/env.validation';
     AuthModule,
     ProductsModule,
     OrdersModule,
+    OperationsModule,
     UploadsModule,
   ],
   controllers: [],

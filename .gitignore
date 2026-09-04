@@ -28,6 +28,13 @@ yarn-error.log*
 pnpm-debug.log*
 frontend-dev.log
 frontend-dev.err.log
+frontend-live.log
+frontend-live.err.log
+api-dev.log
+api-dev.err.log
+api-live.log
+api-live.err.log
+.npm-cache/
 
 # local env files
 .env*.local

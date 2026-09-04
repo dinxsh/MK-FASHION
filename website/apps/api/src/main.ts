@@ -24,7 +24,14 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [process.env.APP_URL || 'http://localhost:3000', 'http://localhost:3003'],
+    origin: (origin, callback) => {
+      // Permit local Next.js development servers, including their fallback port.
+      if (!origin || origin === process.env.APP_URL || /^http:\/\/localhost:30\d{2}$/.test(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origin is not allowed by CORS'));
+    },
     credentials: true,
   });
 

@@ -63,15 +63,15 @@ export default function AdminLoginPage() {
 
         <div className="relative z-10 space-y-4">
           {[
-            { label: 'Total Products', value: '86', icon: '📦' },
-            { label: 'Pending Orders', value: '14', icon: '🛒' },
-            { label: 'Monthly Revenue', value: '₹4.2L', icon: '💰' },
-          ].map(stat => (
-            <div key={stat.label} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 backdrop-blur-sm">
-              <span className="text-xl">{stat.icon}</span>
+            { label: 'Live store data', detail: 'Products, orders, and customers' },
+            { label: 'Protected access', detail: 'Admin-only operations' },
+            { label: 'Database connected', detail: 'Changes are saved immediately' },
+          ].map(item => (
+            <div key={item.label} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 backdrop-blur-sm">
+              <ShieldCheck size={20} className="text-purple-300 shrink-0" />
               <div>
-                <div className="text-white font-bold text-lg leading-tight">{stat.value}</div>
-                <div className="text-slate-500 text-xs">{stat.label}</div>
+                <div className="text-white font-bold text-sm leading-tight">{item.label}</div>
+                <div className="text-slate-500 text-xs">{item.detail}</div>
               </div>
             </div>
           ))}

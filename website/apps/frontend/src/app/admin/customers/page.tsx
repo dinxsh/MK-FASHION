@@ -1,15 +1,21 @@
 'use client';
-import { useState } from 'react';
-import { mockCustomers, mockOrders } from '@/lib/mockData';
+import { useEffect, useState } from 'react';
+import { ApiCustomer, getAdminCustomers, updateCustomerStatus } from '@/lib/adminApi';
 import type { Customer } from '@/lib/types/admin';
-import { Search, Ban, UserCheck, Trash2, Download, X, Mail, Phone, MapPin } from 'lucide-react';
+import { Search, Ban, UserCheck, Download, X, Mail, Phone, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Blocked'>('All');
   const [selected, setSelected] = useState<Customer | null>(null);
+
+  useEffect(() => {
+    getAdminCustomers()
+      .then((items) => setCustomers(items.map(toCustomer)))
+      .catch((error) => toast.error(error instanceof Error ? error.message : 'Unable to load customers'));
+  }, []);
 
   const filtered = customers.filter(c => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase());
@@ -17,19 +23,19 @@ export default function CustomersPage() {
     return matchSearch && matchStatus;
   });
 
-  const toggleBlock = (id: string) => {
-    setCustomers(cs => cs.map(c => c.id === id ? { ...c, status: c.status === 'Active' ? 'Blocked' : 'Active' } : c));
+  const toggleBlock = async (id: string) => {
     const c = customers.find(c => c.id === id);
-    toast.success(`${c?.name} ${c?.status === 'Active' ? 'blocked' : 'unblocked'}`);
+    if (!c) return;
+    try {
+      const updated = toCustomer(await updateCustomerStatus(id, c.status === 'Active' ? 'BLOCKED' : 'ACTIVE'));
+      setCustomers((items) => items.map((customer) => customer.id === id ? updated : customer));
+      setSelected((customer) => customer?.id === id ? updated : customer);
+      toast.success(`${c.name} ${c.status === 'Active' ? 'blocked' : 'unblocked'}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to update customer');
+    }
   };
 
-  const remove = (id: string) => {
-    setCustomers(cs => cs.filter(c => c.id !== id));
-    if (selected?.id === id) setSelected(null);
-    toast.success('Customer removed');
-  };
-
-  const customerOrders = selected ? mockOrders.filter(o => o.customer === selected.name) : [];
   const totalRevenue = customers.reduce((s, c) => s + c.totalSpent, 0);
   const activeCount = customers.filter(c => c.status === 'Active').length;
 
@@ -121,10 +127,6 @@ export default function CustomersPage() {
                         className="p-1.5 rounded-lg text-slate-600 hover:text-amber-400 hover:bg-amber-500/10 transition-colors">
                         {c.status === 'Active' ? <Ban size={13} /> : <UserCheck size={13} />}
                       </button>
-                      <button onClick={() => remove(c.id)}
-                        className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                        <Trash2 size={13} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -196,40 +198,11 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              {/* Order History */}
-              {customerOrders.length > 0 && (
-                <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Order History</div>
-                  <div className="space-y-2">
-                    {customerOrders.map(o => (
-                      <div key={o.id} className="bg-white/[0.03] rounded-xl p-3 flex justify-between items-center">
-                        <div>
-                          <div className="text-purple-400 text-xs font-mono font-bold">{o.id}</div>
-                          <div className="text-slate-500 text-[10px]">{o.date}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white text-xs font-bold">₹{o.total.toLocaleString()}</div>
-                          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
-                            o.status === 'Delivered' ? 'bg-emerald-500/15 text-emerald-400' :
-                            o.status === 'Cancelled' ? 'bg-red-500/15 text-red-400' :
-                            'bg-blue-500/15 text-blue-400'
-                          }`}>{o.status}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Actions */}
               <div className="space-y-2 pt-2">
                 <button onClick={() => toggleBlock(selected.id)}
                   className={`w-full py-2 rounded-xl text-xs font-bold transition-colors ${selected.status === 'Active' ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'}`}>
                   {selected.status === 'Active' ? '🚫 Block Customer' : '✅ Unblock Customer'}
-                </button>
-                <button onClick={() => remove(selected.id)}
-                  className="w-full py-2 rounded-xl text-xs font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
-                  🗑️ Delete Customer
                 </button>
               </div>
             </div>
@@ -238,4 +211,20 @@ export default function CustomersPage() {
       </div>
     </div>
   );
+}
+
+function toCustomer(customer: ApiCustomer): Customer {
+  return {
+    id: customer.id,
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone ?? 'Not provided',
+    totalOrders: customer.totalOrders,
+    totalSpent: customer.totalSpent,
+    joined: new Date(customer.createdAt).toLocaleDateString(),
+    status: customer.status === 'BLOCKED' ? 'Blocked' : 'Active',
+    avatar: customer.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
+    city: customer.city ?? undefined,
+    lastOrder: customer.lastOrderAt ?? undefined,
+  };
 }

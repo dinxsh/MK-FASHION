@@ -20,6 +20,12 @@ export class OrdersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('admin/orders/:id')
+  findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('admin/orders/:id/status')
   updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(id, dto.status);

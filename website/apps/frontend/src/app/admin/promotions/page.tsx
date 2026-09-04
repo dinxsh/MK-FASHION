@@ -1,30 +1,61 @@
 'use client';
-import { useState } from 'react';
-import { mockCoupons } from '@/lib/mockData';
+import { useEffect, useState } from 'react';
+import { ApiCoupon, createCoupon, deleteCoupon as deleteCouponRequest, getAdminCoupons, updateCoupon } from '@/lib/adminApi';
 import type { Coupon } from '@/lib/types/admin';
 import { Plus, Copy, Trash2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function PromotionsPage() {
-  const [coupons, setCoupons] = useState<Coupon[]>(mockCoupons);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ code: '', type: 'percent' as 'percent' | 'fixed', value: '', minOrder: '', maxUses: '', expiry: '' });
 
-  const addCoupon = () => {
+  useEffect(() => {
+    getAdminCoupons()
+      .then((items) => setCoupons(items.map(toCoupon)))
+      .catch((error) => toast.error(error instanceof Error ? error.message : 'Unable to load coupons'));
+  }, []);
+
+  const addCoupon = async () => {
     if (!form.code || !form.value) { toast.error('Code and value are required'); return; }
-    const newCoupon: Coupon = {
-      id: Date.now().toString(), code: form.code.toUpperCase(), type: form.type,
-      value: Number(form.value), minOrder: Number(form.minOrder || 0),
-      uses: 0, maxUses: Number(form.maxUses || 100), expiry: form.expiry, active: true,
-    };
-    setCoupons(c => [newCoupon, ...c]);
-    setForm({ code: '', type: 'percent', value: '', minOrder: '', maxUses: '', expiry: '' });
-    setShowForm(false);
-    toast.success('Coupon created!');
+    try {
+      const coupon = await createCoupon({
+        code: form.code,
+        type: form.type === 'percent' ? 'PERCENT' : 'FIXED',
+        value: Number(form.value),
+        minOrder: Number(form.minOrder || 0),
+        maxUses: form.maxUses ? Number(form.maxUses) : undefined,
+        expiresAt: form.expiry || undefined,
+        isActive: true,
+      });
+      setCoupons((items) => [toCoupon(coupon), ...items]);
+      setForm({ code: '', type: 'percent', value: '', minOrder: '', maxUses: '', expiry: '' });
+      setShowForm(false);
+      toast.success('Coupon created');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to create coupon');
+    }
   };
 
-  const deleteCoupon = (id: string) => { setCoupons(c => c.filter(x => x.id !== id)); toast.success('Coupon deleted'); };
-  const toggleActive = (id: string) => { setCoupons(c => c.map(x => x.id === id ? { ...x, active: !x.active } : x)); };
+  const deleteCoupon = async (id: string) => {
+    try {
+      await deleteCouponRequest(id);
+      setCoupons((items) => items.filter((coupon) => coupon.id !== id));
+      toast.success('Coupon deleted');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to delete coupon');
+    }
+  };
+  const toggleActive = async (id: string) => {
+    const coupon = coupons.find((item) => item.id === id);
+    if (!coupon) return;
+    try {
+      const updated = await updateCoupon(id, { isActive: !coupon.active });
+      setCoupons((items) => items.map((item) => item.id === id ? toCoupon(updated) : item));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to update coupon');
+    }
+  };
   const copyCoupon = (code: string) => { navigator.clipboard.writeText(code); toast.success(`Copied: ${code}`); };
 
   return (
@@ -117,4 +148,19 @@ export default function PromotionsPage() {
       </div>
     </div>
   );
+}
+
+function toCoupon(coupon: ApiCoupon): Coupon {
+  return {
+    id: coupon.id,
+    code: coupon.code,
+    type: coupon.type === 'PERCENT' ? 'percent' : 'fixed',
+    value: Number(coupon.value),
+    minOrder: Number(coupon.minOrder),
+    uses: coupon.uses,
+    maxUses: coupon.maxUses ?? Infinity,
+    expiry: coupon.expiresAt ? new Date(coupon.expiresAt).toISOString().slice(0, 10) : '',
+    active: coupon.isActive,
+    description: coupon.description ?? undefined,
+  };
 }
