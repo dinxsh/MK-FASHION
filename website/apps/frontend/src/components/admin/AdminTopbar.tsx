@@ -1,7 +1,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { Bell, ChevronRight, LogOut, Settings, User } from 'lucide-react';
+import { Bell, ChevronRight, LogOut, Settings, User, Menu } from 'lucide-react';
 import { logout } from '@/lib/adminAuth';
 import { useState, useRef, useEffect } from 'react';
 
@@ -25,7 +25,7 @@ const mockNotifications = [
   { id: '4', title: 'Order Delivered', desc: '#4018 marked as delivered successfully', time: '3h ago', unread: false, color: 'bg-emerald-500' },
 ];
 
-export default function AdminTopbar() {
+export default function AdminTopbar({ menuOpen, onMenuToggle }: { menuOpen: boolean; onMenuToggle: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const segments = pathname.split('/').filter(Boolean);
@@ -53,11 +53,12 @@ export default function AdminTopbar() {
   const markAllRead = () => setNotifs(ns => ns.map(n => ({ ...n, unread: false })));
 
   return (
-    <header className="h-14 bg-[#0a0118]/90 border-b border-white/[0.05] backdrop-blur-sm flex items-center justify-between px-5 shrink-0">
+    <header className="h-14 bg-[#0a0118]/90 border-b border-white/[0.05] backdrop-blur-sm flex items-center justify-between gap-2 px-3 sm:px-5 shrink-0 relative z-30">
+      <button id="admin-menu-toggle" type="button" aria-label="Open navigation" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={onMenuToggle} className="md:hidden shrink-0 flex items-center justify-center w-11 h-11 rounded-xl text-white hover:bg-white/10"><Menu size={22} /></button>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-slate-500">
+      <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-slate-500 overflow-hidden">
         {crumbs.map((c, i) => (
-          <span key={c.href} className="flex items-center gap-1.5">
+          <span key={c.href} className={`${i < crumbs.length - 1 ? 'hidden sm:flex' : 'flex min-w-0'} items-center gap-1.5 [&>span]:truncate`}>
             {i > 0 && <ChevronRight size={12} className="text-slate-700" />}
             <span className={i === crumbs.length - 1 ? 'text-white font-semibold' : 'hover:text-slate-300 cursor-pointer transition-colors'}
               onClick={() => i < crumbs.length - 1 && router.push(c.href)}>
@@ -78,7 +79,7 @@ export default function AdminTopbar() {
         {/* Notifications */}
         <div className="relative" ref={notifsRef}>
           <button onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
-            className="relative w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-white hover:bg-white/[0.05] transition-colors">
+            className="relative w-11 h-11 sm:w-8 sm:h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-white hover:bg-white/[0.05] transition-colors">
             <Bell size={16} />
             {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-purple-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center">
@@ -88,7 +89,7 @@ export default function AdminTopbar() {
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 top-10 w-80 bg-[#0f0520] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden z-50">
+            <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-10 sm:w-80 bg-[#0f0520] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden z-50">
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07]">
                 <span className="text-white font-semibold text-sm">Notifications</span>
                 <button onClick={markAllRead} className="text-purple-400 text-[10px] hover:text-purple-300 font-semibold">Mark all read</button>

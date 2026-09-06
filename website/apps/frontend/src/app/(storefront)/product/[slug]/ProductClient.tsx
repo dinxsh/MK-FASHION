@@ -1,8 +1,10 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
+import WhatsAppLink, { useWhatsAppNumber } from '@/components/WhatsAppLink';
 
 export default function ProductClient({ product }: { product: any }) {
+  const phoneNumber = useWhatsAppNumber();
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState<'desc' | 'about'>('desc');
   const [lightboxImage, setLightboxImage] = useState<number | null>(null);
@@ -59,10 +61,10 @@ export default function ProductClient({ product }: { product: any }) {
 
              {/* Primary Conversion Actions */}
              <div className="space-y-4 mb-14">
-               <button 
+               <button disabled={!phoneNumber}
                  onClick={() => {
                    const message = `Hi MK Fashion team, I would like to purchase the following item:\n\n*${product.name}*\n*Price*: ₹${product.price.toLocaleString('en-IN')}\n*Link*: ${window.location.href}\n\nPlease let me know the next steps for payment and delivery.`;
-                   window.open(`https://wa.me/919876543210?text=${encodeURIComponent(message)}`, '_blank');
+                   window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
                  }}
                  className="w-full bg-brand-burgundy text-white py-5 font-bold tracking-[0.2em] text-sm hover:bg-brand-gold transition-colors shadow-xl"
                >
@@ -78,9 +80,9 @@ export default function ProductClient({ product }: { product: any }) {
                  <Link href="/contact" className="text-xs font-bold tracking-widest text-brand-burgundy flex items-center gap-2 hover:underline">
                     ✉ EMAIL SUPPORT
                  </Link>
-                 <a href="https://wa.me/919876543210" className="text-xs font-bold tracking-widest text-emerald-600 flex items-center gap-2 hover:underline">
+                 <WhatsAppLink className="text-xs font-bold tracking-widest text-emerald-600 flex items-center gap-2 hover:underline">
                     ✆ WHATSAPP US
-                 </a>
+                 </WhatsAppLink>
                </div>
              </div>
 

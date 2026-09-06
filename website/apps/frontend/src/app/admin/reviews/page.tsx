@@ -38,6 +38,7 @@ export default function ReviewsPage() {
     try {
       await deleteReview(id);
       setReviews(rs => rs.filter(r => r.id !== id));
+      window.dispatchEvent(new Event('admin-reviews-changed'));
       toast.success('Review deleted');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to delete review');
@@ -51,7 +52,7 @@ export default function ReviewsPage() {
         <p className="text-slate-400 text-sm mt-0.5">Moderate customer reviews</p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${tab === t ? 'bg-purple-600 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}>
@@ -81,7 +82,7 @@ export default function ReviewsPage() {
                 <p className="text-slate-300 text-sm leading-relaxed">{r.text}</p>
               </div>
             </div>
-            <div className="flex gap-2 mt-4 pt-4 border-t border-white/5">
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/5">
               {r.status !== 'Approved' && (
                 <button onClick={() => updateStatus(r.id, 'Approved')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-xs font-medium">
                   <Check size={12} /> Approve

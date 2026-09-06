@@ -13,3 +13,20 @@
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-lg;
   }
 }
+@media (max-width: 767px) {
+  .admin-content input,
+  .admin-content select,
+  .admin-content textarea {
+    font-size: 16px;
+    max-width: 100%;
+  }
+  .admin-content button,
+  .admin-content select,
+  .admin-content a[aria-label],
+  #admin-sidebar a {
+    min-height: 44px;
+  }
+  .admin-content button,
+  .admin-content a[aria-label] { min-width: 44px; }
+  .admin-content { overflow-wrap: anywhere; }
+}
