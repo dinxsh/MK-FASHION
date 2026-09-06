@@ -7,7 +7,8 @@ import {
   ListOrdered, Layers, Store, ExternalLink
 } from 'lucide-react';
 import { logout } from '@/lib/adminAuth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getAdminProducts } from '@/lib/adminApi';
 
 const navGroups = [
   {
@@ -19,7 +20,7 @@ const navGroups = [
   {
     label: 'Catalog',
     items: [
-      { href: '/admin/products', icon: Package, label: 'Products', badge: '86' },
+      { href: '/admin/products', icon: Package, label: 'Products', badge: null },
       { href: '/admin/categories', icon: Layers, label: 'Categories', badge: null },
     ]
   },
@@ -50,6 +51,24 @@ const navGroups = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [productCount, setProductCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const updateCount = () => {
+      getAdminProducts().then((products) => {
+        if (active) setProductCount(products.length);
+      }).catch(() => {
+        if (active) setProductCount(null);
+      });
+    };
+    updateCount();
+    window.addEventListener('admin-products-changed', updateCount);
+    return () => {
+      active = false;
+      window.removeEventListener('admin-products-changed', updateCount);
+    };
+  }, [pathname]);
 
   const isActive = (href: string) =>
     href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
@@ -81,7 +100,8 @@ export default function AdminSidebar() {
               </div>
             )}
             <div className="space-y-0.5">
-              {group.items.map(({ href, icon: Icon, label, badge }) => {
+              {group.items.map(({ href, icon: Icon, label, badge: defaultBadge }) => {
+                const badge = href === '/admin/products' ? productCount?.toString() : defaultBadge;
                 const active = isActive(href);
                 return (
                   <Link

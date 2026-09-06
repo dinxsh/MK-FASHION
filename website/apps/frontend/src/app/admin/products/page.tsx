@@ -14,6 +14,7 @@ export default function ProductsPage() {
     setLoading(true);
     try {
       setProducts(await getAdminProducts());
+      window.dispatchEvent(new Event('admin-products-changed'));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not load products');
     } finally {
@@ -28,6 +29,7 @@ export default function ProductsPage() {
     try {
       await deleteProduct(product.id);
       setProducts((current) => current.filter((item) => item.id !== product.id));
+      window.dispatchEvent(new Event('admin-products-changed'));
       toast.success('Product deleted');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not delete product');
@@ -40,6 +42,7 @@ export default function ProductsPage() {
         <div>
           <p className="text-purple-300 text-xs font-bold uppercase tracking-[0.2em]">Your store</p>
           <h1 className="text-3xl font-bold text-white mt-1">Product catalogue</h1>
+          {!loading && <p className="text-sm text-purple-300 mt-2">{products.length} {products.length === 1 ? 'product' : 'products'} in your catalogue</p>}
           <p className="text-slate-400 text-sm mt-2">Add a product with a photo, price and stock in a few steps.</p>
         </div>
         <div className="flex gap-2">

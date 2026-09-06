@@ -58,19 +58,26 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: 'no-store',
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
 
-  if (!response.ok) {
-    localStorage.removeItem(STORAGE_KEY);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      return null;
+    }
+
+    return (await response.json()) as AdminUser;
+  } catch {
+    // A temporary API outage must not crash the page or erase the session.
     return null;
   }
-
-  return (await response.json()) as AdminUser;
 }
 
 export function logout(): void {
