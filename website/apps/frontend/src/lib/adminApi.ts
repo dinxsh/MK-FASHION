@@ -1,8 +1,7 @@
 'use client';
 
 import { getStoredToken } from './adminAuth';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api/v1';
+import { getApiBaseUrl } from './apiBaseUrl';
 
 export type ApiProduct = {
   id: string;
@@ -104,7 +103,7 @@ export type CouponInput = {
 
 async function adminRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getStoredToken();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
     headers: { Authorization: `Bearer ${token}`, ...options.headers },
   });

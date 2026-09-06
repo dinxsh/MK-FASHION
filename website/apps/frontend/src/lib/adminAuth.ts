@@ -1,8 +1,8 @@
 'use client';
 
+import { getApiBaseUrl } from './apiBaseUrl';
+
 const STORAGE_KEY = 'mk_admin_access_token';
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api/v1';
 
 export type AdminUser = {
   id: string;
@@ -28,7 +28,7 @@ export function isAuthenticated(): boolean {
 }
 
 export async function login(email: string, password: string): Promise<AdminUser> {
-  const response = await fetch(`${API_BASE_URL}/admin/auth/login`, {
+  const response = await fetch(`${getApiBaseUrl()}/admin/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/auth/me`, {
+    const response = await fetch(`${getApiBaseUrl()}/admin/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -6,6 +6,15 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const configuredOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const allowedOrigins = new Set(
+    [process.env.APP_URL, 'http://localhost:3333', ...configuredOrigins].filter(
+      (origin): origin is string => Boolean(origin),
+    ),
+  );
 
   // Uploaded product photos are served directly in this small local setup.
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
@@ -25,8 +34,12 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Permit local Next.js development servers, including their fallback port.
-      if (!origin || origin === process.env.APP_URL || /^http:\/\/localhost:30\d{2}$/.test(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.has(origin) ||
+        /^http:\/\/localhost:(30\d{2}|3333)$/.test(origin) ||
+        /^https:\/\/[a-z0-9-]+\.sanity\.studio$/i.test(origin)
+      ) {
         callback(null, true);
         return;
       }
