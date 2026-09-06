@@ -14,6 +14,7 @@ export default function ProductsPage() {
     setLoading(true);
     try {
       setProducts(await getAdminProducts());
+      window.dispatchEvent(new Event('admin-products-changed'));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not load products');
     } finally {
@@ -28,6 +29,7 @@ export default function ProductsPage() {
     try {
       await deleteProduct(product.id);
       setProducts((current) => current.filter((item) => item.id !== product.id));
+      window.dispatchEvent(new Event('admin-products-changed'));
       toast.success('Product deleted');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not delete product');
@@ -40,6 +42,7 @@ export default function ProductsPage() {
         <div>
           <p className="text-purple-300 text-xs font-bold uppercase tracking-[0.2em]">Your store</p>
           <h1 className="text-3xl font-bold text-white mt-1">Product catalogue</h1>
+          {!loading && <p className="text-sm text-purple-300 mt-2">{products.length} {products.length === 1 ? 'product' : 'products'} in your catalogue</p>}
           <p className="text-slate-400 text-sm mt-2">Add a product with a photo, price and stock in a few steps.</p>
         </div>
         <div className="flex gap-2">
@@ -53,9 +56,9 @@ export default function ProductsPage() {
           <div className="p-14 text-center"><p className="text-white font-semibold">Your catalogue is empty</p><p className="text-slate-400 text-sm mt-2">Create your first product to show it on the store.</p></div>
         ) : <div className="divide-y divide-white/[0.07]">
           {products.map((product) => (
-            <div key={product.id} className="flex items-center gap-4 p-4 sm:p-5">
+            <div key={product.id} className="flex items-center gap-2 sm:gap-4 p-3 sm:p-5">
               {product.images[0]?.url ? <img src={product.images[0].url} alt={product.name} className="h-16 w-14 rounded-xl bg-white/5 object-cover" /> : <div className="h-16 w-14 rounded-xl bg-white/5" />}
-              <div className="min-w-0 flex-1"><p className="truncate font-semibold text-white">{product.name}</p><p className="mt-1 text-xs text-slate-500">{product.category?.name || 'Uncategorised'} · {product.sku}</p><p className="mt-1 text-sm text-emerald-400">₹{Number(product.price).toLocaleString('en-IN')} <span className="text-slate-500">· {product.inventoryItem?.availableQty ?? 0} in stock</span></p></div>
+              <div className="min-w-0 flex-1"><p className="truncate font-semibold text-white">{product.name}</p><p className="mt-1 text-xs text-slate-500 break-all">{product.category?.name || 'Uncategorised'} · {product.sku}</p><p className="mt-1 text-sm text-emerald-400">₹{Number(product.price).toLocaleString('en-IN')} <span className="text-slate-500">· {product.inventoryItem?.availableQty ?? 0} in stock</span></p></div>
               <span className="hidden sm:block rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-300">{product.status}</span>
               <Link href={`/admin/products/${product.id}`} className="rounded-lg p-2 text-slate-400 hover:bg-purple-500/15 hover:text-purple-300" aria-label={`Edit ${product.name}`}><Pencil size={16} /></Link>
               <button onClick={() => void remove(product)} className="rounded-lg p-2 text-slate-400 hover:bg-red-500/15 hover:text-red-300" aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button>

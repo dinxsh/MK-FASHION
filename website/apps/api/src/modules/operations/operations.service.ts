@@ -156,7 +156,12 @@ export class OperationsService {
   getContent() { return this.prisma.contentBlock.findMany({ orderBy: { key: 'asc' } }); }
   upsertContent(key: string, dto: ContentBlockDto) { if (dto.key !== key) throw new BadRequestException('Content key cannot be changed'); return this.prisma.contentBlock.upsert({ where: { key }, create: { key, title: dto.title.trim(), value: dto.value as Prisma.InputJsonValue, publishedAt: dto.published ? new Date() : null }, update: { title: dto.title.trim(), value: dto.value as Prisma.InputJsonValue, ...(dto.published !== undefined && { publishedAt: dto.published ? new Date() : null }) } }); }
   getSettings() { return this.prisma.storeSetting.findMany({ orderBy: { key: 'asc' } }); }
-  upsertSetting(key: string, dto: StoreSettingDto) { if (dto.key !== key) throw new BadRequestException('Setting key cannot be changed'); return this.prisma.storeSetting.upsert({ where: { key }, create: { key, value: dto.value as Prisma.InputJsonValue }, update: { value: dto.value as Prisma.InputJsonValue } }); }
+  async getWhatsApp() {
+    const setting = await this.prisma.storeSetting.findUnique({ where: { key: 'whatsapp' } });
+    const value = setting?.value as { number?: string } | undefined;
+    return { number: value?.number ?? null };
+  }
+  upsertSetting(key: string, dto: StoreSettingDto) { if (key === 'whatsapp' && (typeof dto.value.number !== 'string' || (dto.value.number !== '' && !/^[1-9]\d{7,14}$/.test(dto.value.number)))) throw new BadRequestException('Enter a WhatsApp number with 8–15 digits including country code'); if (dto.key !== key) throw new BadRequestException('Setting key cannot be changed'); return this.prisma.storeSetting.upsert({ where: { key }, create: { key, value: dto.value as Prisma.InputJsonValue }, update: { value: dto.value as Prisma.InputJsonValue } }); }
 
   async getAnalytics() {
     const [products, customers, orders, categoryStats, topProducts] = await Promise.all([

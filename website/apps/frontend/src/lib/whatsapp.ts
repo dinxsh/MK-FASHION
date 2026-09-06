@@ -1,8 +1,7 @@
 import type { StoreProduct } from './storeApi';
 
-const phoneNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '').replace(/\D/g, '');
 
-export function getWhatsAppOrderUrl(product: StoreProduct) {
+export function getWhatsAppOrderUrl(product: StoreProduct, phoneNumber: string) {
   if (!phoneNumber) return null;
 
   const message = [

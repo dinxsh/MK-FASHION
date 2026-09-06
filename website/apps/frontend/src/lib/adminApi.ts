@@ -208,3 +208,10 @@ export async function uploadProductImage(file: File) {
   form.append('image', file);
   return adminRequest<{ imageUrl: string }>('/admin/uploads/product-image', { method: 'POST', body: form });
 }
+
+export function saveWhatsAppNumber(number: string) {
+  return adminRequest('/admin/settings/whatsapp', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key: 'whatsapp', value: { number } }),
+  });
+}
