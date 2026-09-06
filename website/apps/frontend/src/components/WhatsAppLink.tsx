@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getApiBaseUrl } from '@/lib/apiBaseUrl';
 
 export async function loadWhatsAppNumber(): Promise<string> {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api/v1';
+  const base = getApiBaseUrl();
   const response = await fetch(`${base}/store/whatsapp`, { cache: 'no-store' });
   if (!response.ok) throw new Error('Could not load WhatsApp settings');
   const data = await response.json();

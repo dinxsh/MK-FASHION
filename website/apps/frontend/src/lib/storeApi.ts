@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from './apiBaseUrl';
+
 export type StoreProduct = {
   id: string;
   slug: string;
@@ -9,16 +11,14 @@ export type StoreProduct = {
   inventoryItem: { availableQty: number } | null;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api/v1';
-
 export async function getStoreProducts(): Promise<StoreProduct[]> {
-  const response = await fetch(`${API_BASE_URL}/products`, { cache: 'no-store' });
+  const response = await fetch(`${getApiBaseUrl()}/products`, { cache: 'no-store' });
   if (!response.ok) throw new Error('Could not load products');
   return response.json();
 }
 
 export async function getStoreProduct(slug: string): Promise<StoreProduct> {
-  const response = await fetch(`${API_BASE_URL}/products/${slug}`, { cache: 'no-store' });
+  const response = await fetch(`${getApiBaseUrl()}/products/${slug}`, { cache: 'no-store' });
   if (!response.ok) throw new Error('Product not found');
   return response.json();
 }
