@@ -4,11 +4,11 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ShoppingBag, Users, Package, BarChart3,
   Tag, Image, Star, Settings, LogOut, ChevronLeft, ChevronRight,
-  ListOrdered, Layers, Store, ExternalLink
+  ListOrdered, Layers, Store, ExternalLink, X
 } from 'lucide-react';
 import { logout } from '@/lib/adminAuth';
-import { useEffect, useState } from 'react';
-import { getAdminProducts } from '@/lib/adminApi';
+import { useEffect, useState, useRef } from 'react';
+import { getAdminProducts, getAdminOrders, getAdminReviews } from '@/lib/adminApi';
 
 const navGroups = [
   {
@@ -27,7 +27,7 @@ const navGroups = [
   {
     label: 'Sales',
     items: [
-      { href: '/admin/orders', icon: ListOrdered, label: 'Orders', badge: '14' },
+      { href: '/admin/orders', icon: ListOrdered, label: 'Orders', badge: null },
       { href: '/admin/customers', icon: Users, label: 'Customers', badge: null },
       { href: '/admin/promotions', icon: Tag, label: 'Promotions', badge: null },
     ]
@@ -36,7 +36,7 @@ const navGroups = [
     label: 'Insights',
     items: [
       { href: '/admin/analytics', icon: BarChart3, label: 'Analytics', badge: null },
-      { href: '/admin/reviews', icon: Star, label: 'Reviews', badge: '2' },
+      { href: '/admin/reviews', icon: Star, label: 'Reviews', badge: null },
     ]
   },
   {
@@ -48,25 +48,61 @@ const navGroups = [
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose: () => void }) {
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const panel = sidebarRef.current;
+    const previous = document.activeElement as HTMLElement | null;
+    panel?.querySelector<HTMLButtonElement>('button')?.focus();
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current();
+      if (event.key !== 'Tab') return;
+      const items = Array.from(panel?.querySelectorAll<HTMLElement>('a[href], button') || []).filter(item => item.getClientRects().length > 0);
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', handler);
+    return () => { document.removeEventListener('keydown', handler); previous?.focus(); };
+  }, [mobileOpen]);
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [productCount, setProductCount] = useState<number | null>(null);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const reset = () => { if (media.matches) setCollapsed(false); else closeRef.current(); };
+    reset();
+    media.addEventListener('change', reset);
+    return () => media.removeEventListener('change', reset);
+  }, []);
+  const [counts, setCounts] = useState<Record<string, number | null>>({});
 
   useEffect(() => {
     let active = true;
-    const updateCount = () => {
-      getAdminProducts().then((products) => {
-        if (active) setProductCount(products.length);
-      }).catch(() => {
-        if (active) setProductCount(null);
-      });
+    let pending = false;
+    const updateCount = async () => {
+      if (pending) return;
+      pending = true;
+      const results = await Promise.allSettled([getAdminProducts(), getAdminOrders(), getAdminReviews()]);
+      if (active) {
+        const paths = ['/admin/products', '/admin/orders', '/admin/reviews'];
+        setCounts(Object.fromEntries(results.map((result, index) => [paths[index], result.status === 'fulfilled' ? result.value.length : null])));
+      }
+      pending = false;
     };
     updateCount();
     window.addEventListener('admin-products-changed', updateCount);
+    window.addEventListener('admin-reviews-changed', updateCount);
+    window.addEventListener('focus', updateCount);
+    const timer = window.setInterval(updateCount, 15000);
     return () => {
       active = false;
       window.removeEventListener('admin-products-changed', updateCount);
+      window.removeEventListener('admin-reviews-changed', updateCount);
+      window.removeEventListener('focus', updateCount);
+      window.clearInterval(timer);
     };
   }, [pathname]);
 
@@ -74,9 +110,13 @@ export default function AdminSidebar() {
     href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
 
   return (
+    <>
+    {mobileOpen && <div onClick={onClose} className="fixed inset-0 z-40 bg-black/60 md:hidden" aria-hidden="true" />}
     <aside
-      className={`${collapsed ? 'w-[72px]' : 'w-60'} transition-all duration-300 bg-[#0a0118] flex flex-col h-screen relative shrink-0 border-r border-white/[0.06]`}
+      id="admin-sidebar" ref={sidebarRef} aria-label="Admin navigation"
+      className={`${mobileOpen ? 'flex' : 'hidden'} md:flex fixed md:relative inset-y-0 left-0 z-50 w-[min(18rem,85vw)] ${collapsed ? 'md:w-[72px]' : 'md:w-60'} transition-all duration-300 bg-[#0a0118] flex-col h-dvh shrink-0 border-r border-white/[0.06]`}
     >
+      <button type="button" onClick={onClose} aria-label="Close navigation" className="md:hidden self-end w-11 h-11 flex items-center justify-center text-white"><X size={22} /></button>
       {/* Logo */}
       <div className={`p-4 border-b border-white/[0.06] flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center shrink-0 text-white font-black text-sm shadow-lg shadow-purple-500/20">
@@ -91,7 +131,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+      <nav onClick={(event) => { if ((event.target as HTMLElement).closest('a')) onClose(); }} className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
         {navGroups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
@@ -101,7 +141,7 @@ export default function AdminSidebar() {
             )}
             <div className="space-y-0.5">
               {group.items.map(({ href, icon: Icon, label, badge: defaultBadge }) => {
-                const badge = href === '/admin/products' ? productCount?.toString() : defaultBadge;
+                const badge = counts[href]?.toString() ?? defaultBadge;
                 const active = isActive(href);
                 return (
                   <Link
@@ -167,10 +207,12 @@ export default function AdminSidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-[72px] w-6 h-6 bg-[#1a0a2e] border border-white/10 rounded-full flex items-center justify-center text-slate-400 shadow-lg hover:bg-purple-600 hover:text-white transition-all z-20"
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="hidden md:flex absolute -right-3 top-[72px] w-6 h-6 bg-[#1a0a2e] border border-white/10 rounded-full items-center justify-center text-slate-400 shadow-lg hover:bg-purple-600 hover:text-white transition-all z-20"
       >
         {collapsed ? <ChevronRight size={11} /> : <ChevronLeft size={11} />}
       </button>
     </aside>
+    </>
   );
 }

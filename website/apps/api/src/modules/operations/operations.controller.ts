@@ -61,6 +61,7 @@ export class OperationsController {
   @Put('admin/content/:key') upsertContent(@Param('key') key: string, @Body() dto: ContentBlockDto) { return this.service.upsertContent(key, dto); }
   @UseGuards(JwtAuthGuard)
   @Get('admin/settings') settings() { return this.service.getSettings(); }
+  @Get('store/whatsapp') whatsapp() { return this.service.getWhatsApp(); }
   @UseGuards(JwtAuthGuard)
   @Put('admin/settings/:key') upsertSetting(@Param('key') key: string, @Body() dto: StoreSettingDto) { return this.service.upsertSetting(key, dto); }
   @UseGuards(JwtAuthGuard)

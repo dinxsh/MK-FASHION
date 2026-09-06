@@ -14,6 +14,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   const isLoginPage = pathname === '/admin/login';
 
@@ -60,11 +62,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans bg-[#050108] text-white flex h-screen overflow-hidden">
-        {!isLoginPage && <AdminSidebar />}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {!isLoginPage && <AdminTopbar />}
-          <main className={`flex-1 overflow-y-auto ${isLoginPage ? '' : 'p-6 md:p-8'}`}>
+      <body className="font-sans bg-[#050108] text-white flex h-dvh overflow-hidden">
+        {!isLoginPage && <AdminSidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />}
+        <div className="flex min-w-0 flex-col flex-1 overflow-hidden">
+          {!isLoginPage && <AdminTopbar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen(!menuOpen)} />}
+          <main className={`admin-content flex-1 min-w-0 overflow-y-auto ${isLoginPage ? '' : 'p-4 sm:p-6 md:p-8'}`}>
             {children}
           </main>
         </div>

@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
       {/* Top Products Table */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
         <h2 className="font-semibold text-white mb-5">Top Selling Products</h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[480px] text-sm">
           <thead>
             <tr className="border-b border-white/10 text-slate-400 text-xs">
               <th className="text-left pb-3 font-semibold">Product</th>
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

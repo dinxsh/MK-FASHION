@@ -1,4 +1,5 @@
 'use client';
+import WhatsAppSettings from '@/components/admin/WhatsAppSettings';
 import { useState } from 'react';
 import { Save, Bell, Shield, Palette, Globe, CreditCard, Truck, ChevronRight, LogOut, User, UserPlus, Trash2, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -62,6 +63,7 @@ export default function SettingsPage() {
         })}
       </div>
 
+      {tab === 'general' && <WhatsAppSettings />}
       {/* General */}
       {tab === 'general' && (
         <Section title="Store Information" desc="Your store's public-facing details">
@@ -69,7 +71,7 @@ export default function SettingsPage() {
           <Field label="Contact Email"><TextInput value={storeEmail} onChange={setStoreEmail} type="email" /></Field>
           <Field label="Phone Number"><TextInput value={storePhone} onChange={setStorePhone} /></Field>
           <Field label="Business Address"><TextInput value={storeAddress} onChange={setStoreAddress} /></Field>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Field label="Currency">
               <select value={currency} onChange={e => setCurrency(e.target.value)} className={selectCls}>
                 <option value="INR">INR (₹)</option>
