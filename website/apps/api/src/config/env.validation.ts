@@ -1,6 +1,7 @@
 type EnvShape = {
   PORT?: string;
   APP_URL?: string;
+  CORS_ALLOWED_ORIGINS?: string;
   DATABASE_URL?: string;
   REDIS_URL?: string;
   ELASTICSEARCH_URL?: string;
