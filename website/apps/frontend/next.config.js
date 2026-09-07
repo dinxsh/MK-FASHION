@@ -3,8 +3,6 @@ const nextConfig = {
   async redirects() {
     return [{ source: '/admin/:path*', destination: '/studio', permanent: false }];
   },
-  // Keep generated Next files out of OneDrive's broken `.next` placeholder.
-  distDir: '.next-cache',
   images: {
     remotePatterns: [
       {
