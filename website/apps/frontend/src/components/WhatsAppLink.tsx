@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanityClient } from '@/lib/sanity';
 
 export async function loadWhatsAppNumber(): Promise<string> {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api/v1';
-  const response = await fetch(`${base}/store/whatsapp`, { cache: 'no-store' });
-  if (!response.ok) throw new Error('Could not load WhatsApp settings');
-  const data = await response.json();
-  return data.number ?? (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '').replace(/\D/g, '');
+  if (!sanityClient) return '';
+  const number = await sanityClient.fetch<string | null>(
+    '*[_type == "storeSettings" && !(_id in path("drafts.**"))][0].whatsappNumber',
+    {}, { cache: 'no-store' },
+  );
+  return (number || '').replace(/\D/g, '');
 }
 
 export function useWhatsAppNumber() {
