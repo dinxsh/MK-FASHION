@@ -1,10 +1,11 @@
 import { NextStudio } from 'next-sanity/studio';
 import config from '../../../../sanity.config';
 import { hasSanityConfig } from '../../../../sanity/env';
+import { getCmsConnectionStatus } from '@/lib/sanityConnection';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
-export default function StudioPage() {
+export default async function StudioPage() {
   if (!hasSanityConfig()) {
     return (
       <main style={{ fontFamily: 'sans-serif', margin: '0 auto', maxWidth: 720, padding: '80px 24px' }}>
@@ -28,5 +29,27 @@ SANITY_API_READ_TOKEN=your-read-token`}
     );
   }
 
-  return <NextStudio config={config} />;
+  const status = await getCmsConnectionStatus();
+  console.info(status.message);
+
+  return (
+    <>
+      <div
+        style={{
+          background: status.success ? '#064e3b' : '#7f1d1d',
+          color: '#f8fafc',
+          fontFamily: 'sans-serif',
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: '0.03em',
+          padding: '10px 16px',
+          textAlign: 'center',
+          textTransform: 'uppercase',
+        }}
+      >
+        {status.message}
+      </div>
+      <NextStudio config={config} />
+    </>
+  );
 }
